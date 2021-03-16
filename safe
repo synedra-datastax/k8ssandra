@@ -1,0 +1,21 @@
+FROM ubuntu:latest
+ENV DEBIAN_FRONTEND=noninteractive
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y apt-transport-https gnupg2 curl wget docker git
+RUN curl -L0 "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" --output kubectl
+RUN install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+RUN curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.10.0/kind-linux-amd64
+RUN install -o root -g root -m 0755 kind /usr/local/bin/kind
+RUN wget https://get.helm.sh/helm-v3.4.1-linux-amd64.tar.gz
+RUN tar -xzvf helm-v3.4.1-linux-amd64.tar.gz
+RUN install -o root -g root -m 0755 linux-amd64/helm /usr/local/bin/helm
+RUN git clone https://github.com/datastaxdevs/k8ssandra-workshop
+RUN cd k8ssandra-workshop
+RUN ls
+RUN kind create cluster --config ./kind.yaml --image kindest/node:v1.18.2
+RUN kubectl cluster-info --context kind-kind
+RUN helm repo add k8ssandra https://helm.k8ssandra.io/stable
+RUN helm repo update
+RUN helm repo add traefik https://helm.traefik.io/traefik
+RUN helm repo update
+RUN helm install traefik traefik/traefik -f traefik.yaml
+
